@@ -1,0 +1,22 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to release ownership of a DiskSuite "metaset" (shared disks)     #
+#  Provided as a tool to be called from 'stophasrv'                       #
+#  Specify the name of the metaset as the only argument                   #
+#  Be durn sure that you have released all filesystems/disk things        #
+#  before calling this in  stophasrv                                      #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+PATH=$PATH:/usr/sbin
+
+if [ "$1" = "" ] ; then
+	error ERROR: no metaset specified
+	exit 1
+fi
+
+metaset -s $1 -r
+

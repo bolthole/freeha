@@ -1,0 +1,19 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+#  This file verifies that we retain posession of the DiskSuite "metaset" #
+#  If we loose ownership of the shared disk set, that would be Very Bad.  #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#  Provided as a tool to be called from 'monitorhasrv'                    #
+#-------------------------------------------------------------------------#
+
+
+
+#paranoia is good
+PATH=$PATH:/usr/sbin:/sbin
+
+
+metaset -s $1 -o
+

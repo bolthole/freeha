@@ -1,0 +1,28 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+#  Provided as a tool to be called from 'monitorhasrv'                    #
+#  This file acts as an example monitor script, for the dummy sample      #
+#  service, "cat /dev/zero"                                               #
+#  It could be replaced by "proc.monitor 'cat /dev/zero'", but that       #
+#  would not provide an example for a full three-fold service handler     #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#-------------------------------------------------------------------------#
+
+if [ -x /usr/ucb/ps ] ; then
+	PROCLIST="/usr/ucb/ps aux"
+else
+	PROCLIST="ps -ef"
+fi
+
+
+$PROCLIST | grep 'cat /d[e]v/zero' >/dev/null
+
+if [ $? -eq 0 ] ; then
+	exit 0 
+fi
+
+exit 1
+

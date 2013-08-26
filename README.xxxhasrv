@@ -1,0 +1,38 @@
+README file for {start|stop|monitor}hasrv scripts.
+You will have to modify each of these scripts,
+ to start and stop your desired services.
+
+
+starthasrv:
+	Starts the services you want, on an active node.
+	Be paranoid, and check to see that they properly start.
+	Return 0 on good start, non-zero (eg: 1) on fail
+
+
+stophasrv:
+	The yin to starthasrv's yang.
+	Stops the services on a node.
+	You MUST stop services before you exit from the script.
+	"Failure is NOT an option".
+	Return value of the script is not checked.
+	Do not exit the script until the services are stopped
+	This script is called both when a clean stop is requested, AND
+	after monitorhasrv detects an error. 
+
+monitorhasrv:
+	Monitor everything you are running, with this script.
+	Either everything is good, or it is time to take things down and
+	fail over to another node.
+	Return 0, and everything stays happy.
+	Return non-0, and the demon will call stophasrv, and mark
+	this node as errored.
+	At that point, you have to kill and restart the HA demon to bring
+	things back on-line.
+	This is a safety feature. In theory, it is better to avoid corrupted
+	starts, than to bounce back and forth in and endless loop between the
+	nodes vainly trying to restart services. 
+
+alerthasrv:
+	By default, does nothing. This gets called whenever freehad changes
+	state. For example, when a standby node goes active, its state
+	changes from "STANDBY" to "RUNNING"

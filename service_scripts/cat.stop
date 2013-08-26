@@ -1,0 +1,47 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+# Script to demonstrate stopping a dummy service, for FreeHA              #
+#  Provided as a tool to be called from 'stophasrv'                       #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#-------------------------------------------------------------------------#
+
+# 'service' is  'cat /dev/zero'
+# Unfortunately, clean stop of the 'service' is considerably longer than
+# starting it.
+
+if [ -x /usr/ucb/ps ] ; then
+	PROCLIST="/usr/ucb/ps aux"
+else
+	PROCLIST="ps -ef"
+fi
+
+TESTPID=`$PROCLIST | grep 'cat /d[e]v/zero' |awk '{print $2}'`
+
+testup(){
+	ps -e | awk '$1 == "'$TESTPID'" {print "yes"}'
+}
+
+#echo cat.stop: DEBUG: pid is $TESTPID
+
+if [ "$TESTPID" = "" ] ; then
+	echo 'cat.stop: no pid for service found. service not running'
+	exit
+fi
+
+# First do it the nice way...
+kill $TESTPID
+
+val=`testup` 
+
+
+# loop until we kill it DEAD, DEAD, DEAD!
+while [ "$val" != "" ] ; do
+#	echo val = .${val}.
+	# then SQUISH IT!!
+	kill -9 $TESTPID
+	sleep 1
+	val=`testup` 
+done

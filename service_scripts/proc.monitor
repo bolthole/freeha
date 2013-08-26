@@ -1,0 +1,33 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+#  proc.monitor                                                           #
+#  This script verifies that the named process is running.                #
+#  It actually just greps the process list for the string you pass in     #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#                                                                         #
+#  Provided as a tool to be called from 'monitorhasrv'                    #
+#                                                                         #
+#  Normally, there would be companion 'proc.start' and 'proc.stop'        #
+#  scripts. But that would seem to be a bit redundant, for this case      #
+#-------------------------------------------------------------------------#
+
+
+if [ -x /usr/ucb/ps ] ; then
+	PROCLIST="/usr/ucb/ps aux"
+else
+	PROCLIST="ps -ef"
+fi
+
+
+
+$PROCLIST | fgrep "$*" >/dev/null
+
+if [ $? -eq 0 ] ; then
+	exit 0 
+fi
+
+exit 1
+

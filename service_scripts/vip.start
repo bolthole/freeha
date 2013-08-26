@@ -1,0 +1,60 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to plumb up a "virtual IP" for cluster services to use           #
+# Provided as a tool to be called from 'starthasrv'                       #
+#                                                                         #
+# USAGE:   vip.start IP NICNAME                                           #
+#    EG:   vip.start 10.3.5.7 eri0                                        #
+#             (MUST be ip addr, not name)                                 #
+#  Script will automatically add a ":1", or whatever, to the physical NIC #
+#     Do not specify a virtual NICNAME like eth0:1                        #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+
+#This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ "$2" = "" ] ; then
+	echo vip.start: ERROR: no NIC specified
+	echo vip.start: Need IP and base interface name
+	exit 1
+fi
+case "$1" in
+	[0-9]*)
+		break
+		;;
+	*)
+		echo vip.start: ERROR: no IP address specified
+		echo vip.start: Need IP and base interface name
+		exit 1
+		;;
+esac
+
+
+# Is it already up?
+#This uses the same algorithm as vip.stop
+exists=`ifconfig -a | awk '
+$1 ~ /:/        {split($1,nic,":"); 
+                 lastif=sprintf("%s:%s",nic[1],nic[2]);}
+$2 == "'$1'"    { print lastif ; exit; }
+
+'`
+
+if [ "$exists" = "" ] ; then
+	ping $1 1>/dev/null 2>&1
+	if [ $? -eq 0 ] ; then
+	echo "vip.start: ERROR: vip $1 already active elsewhere! Cannot continue!"
+	exit 1
+	fi
+else
+	echo vip.start: NOTICE: vip already exists, as $exists
+	exit 0
+fi
+
+ifconfig $2 addif $1 netmask + broadcast + up

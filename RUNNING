@@ -1,0 +1,138 @@
+                    FreeHA Operations Manual
+
+In normal operation, all nodes will be booted up and have the freehad demon
+started. When all nodes are up, freehad will determine the node that has
+the **alphabetically first** uname, and start services on that node.
+
+If you have more than 2 nodes, and the 'first' node starts more slowly than
+the others, it is possible that services will be auto-started on one of the
+other faster-starting nodes.
+
+
+
+SERVICES
+-----------
+
+To determine what services are run on the active node, look at
+the 'starthasrv' script, in the main BINDIR for the demon.
+[ usually, /opt/freeha/bin/starthasrv ]
+
+Read the "INSTALL" file, under the "SETTING UP CLUSTERED SERVICES" section,
+for more details on configuring services.
+
+
+
+STARTING AND STOPPING
+----------------------
+
+
+A regular kill of the process will cleanly stop services, and
+shut down the demon. This is how services should be stopped on the primary,
+node, if you wish to fail over to a secondary node.
+
+The other nodes will view the stopped node to be in a 'STOPPING' state,
+until it times out, after which services will be started on another node.
+This is a 'feature', in that it gives you time to decide "oops, I screwed up"
+and restart the demon on the node you just killed it on.
+
+If you restart the demon after services have successfully been transitioned
+to another node, they will safely remain on that other node without
+interference.
+
+  o o o o o o o
+
+To cleanly stop services on a node, but still leave the demon running, send
+a HUP signal to the demon, with "kill -HUP {pid-of-demon}"
+
+This will put the demon on the current node into 'STOPPING' state,
+and the stophasrv script will be called.
+
+After shutdown of services, the "cluster" will try to start services
+up on the alphabetically first node that is still visible.
+This makes it possibly a waste of your time to send a HUP signal to the
+first node in the cluster! It is primarily useful for failing the
+services back to the "primary" node (the "first" node).
+
+If you wish to fail service from the primary node to the secondary node,
+then 'fail' is exactly what is neccessary. 
+Use the "stophasrv" script to do a *clean* shutdown of services on node 1.
+Since the demon itself did not initiate the shutdown, it will interpret
+that as a "failure" of services. A secondary node will then
+shortly take over services.
+
+ o o o o o o o o o o o o o o o o o o 
+
+To force starting services by an already running demon, send a USR1 signal.
+eg:  "kill -USR1 3456 "
+
+THIS DOES NOT CHECK OTHER NODES TO SEE IF SERVICES ARE ALREADY RUNNING.
+ALSO, THIS CLEARS THE ERROR FLAG.
+
+To force starting services when starting up freehad, use the -m flag.
+As with the -USR1 signal,
+THIS DOES NOT CHECK OTHER NODES TO SEE IF SERVICES ARE ALREADY RUNNING.
+
+
+If you just wish to clear the error flag,   kill -USR2 {freehad-pid}
+
+ STATUS OF NODES
+----------------------
+
+Current status of all nodes can be seen in /var/run/freeha, or if that
+does not exist, /var/freeha/state, or whereever you specify with the -l flag.
+
+Cute trick to run in a window:
+
+ while true ; do clear ; cat /var/run/freehad ; sleep 1 ; done
+
+
+ CLEARING ERRORED STATE
+-------------------------
+
+Currently, there are exactly two ways to clear a node of the 'ERRORED' state:
+
+  1. **force-start** services on it, with the USR1 signal
+  2. restart the demon
+
+
+
+ LOGGING
+--------------------
+
+FreeHA will use syslog to record major changes of state, if you have
+USE_SYSLOG defined in the Makefile.
+By default, it logs as facility LOCAL1. Edit the source to change this if you
+desire.
+
+Note that the freehad demon does not currently detatch itself from a tty,
+if you run it by hand. (So it is not technically a 'demon' yet :-)
+Similarly, it uses plain old system() to call the
+start script. So if neccessary, be sure to redirect anything in your
+starthasrv script, as
+  prog </dev/null >/dev/null 2>&1  &
+if you dont want associations between the demon, and your program being run.
+
+
+AVOIDING 'SPLIT-BRAIN' SYNDROME
+--------------------------------
+
+With a two-node cluster, there is always a posibility of the 'split-brain'
+problem: Having each node lose contact with the other, then assuming they
+need to start up services.
+If you have multiple private network connections between them, then this is a
+fairly unlikely possiblity. But, if you are DETERMINED to avoid this
+situation, then I suggest you allocate a third node, that will not actually
+run services, but simply serves as a 'neutral arbitrator' of who gets to run
+services in this split-brain situation.
+
+BUGS ON STARTUP
+--------------------
+As I mention elsewhere, the 'demon' is not fully a demon. Which means
+that sometimes, child processes get somehow associated with the demon's
+listening socket. Which means if you get an error like
+
+  ERROR trying to bind listen socket: Address already in use
+
+you may have to kill services on that machine by hand, before starting
+the demon again.
+

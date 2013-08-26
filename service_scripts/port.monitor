@@ -1,0 +1,40 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+#  port.monitor                                                           #
+#  This script verifies that "something" is listening on the port named   #
+#   If this doesnt work for your OS, please submit a patch                #
+#                                                                         #
+# Usage:  port.monitor portnum [specific IP addr]                         #
+#                                                                         #
+# The default is to look for a 'globally bound port'                      #
+# If your process binds to a specific IP address. you MUST specify that   #
+# IP address, or this script will not detect it                           #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#                                                                         #
+#                                                                         #
+#-------------------------------------------------------------------------#
+
+
+PATH=$PATH:/usr/sbin:/sbin:/etc
+
+if [ "$1" = "" ] ; then
+	echo "port.monitor: ERROR: no port number given"
+	exit 1
+fi
+if [ "$2" = "" ] ; then
+	IPADDR='*'
+else
+	IPADDR="$2"
+fi
+
+netstat -an | fgrep $IPADDR".$1"|grep LISTEN >/dev/null
+
+if [ $? -eq 0 ] ; then
+	exit 0 
+fi
+
+exit 1
+

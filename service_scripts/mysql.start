@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Script to have FreeHA start mysql.
+# Call with path to mysql.server script
+# EG:
+#    start.mysql  /opt/sfw/share/mysql/mysql.server
+
+
+if [ ! -x "$1" ] ; then
+	echo mysql.start: ERROR: $1 is not valid mysql.server script
+	exit 1
+fi
+
+$1 start </dev/null
+
+

@@ -1,0 +1,44 @@
+Quickie overview of how 'heartbeats' work for freeha:
+
+You should set up multiple networks between the machines in the cluster 
+(2 networks minimum) , on at least 2 separate interfaces per machine, so 
+that they can tell each other what is going on.
+
+freeha takes advantage of standard IP 'broadcast' definitions, to send a UDP
+broadcast packet to all the machines on the heartbeat subnet, with a single
+packet. This 'heartbeat' packet is sent by each cluster machine every second.
+That is good, in that it easily allows for multiple machines in standby mode 
+in the cluster. It is "bad", if you happen to be sharing the network with
+other machines.
+
+Ideally, you will use dedicated interfaces with private switches, or
+direct-connect crossover cables, for this. However, it is just as easy to use
+existing network interfaces, and allocate additional virtual interfaces for
+them.
+
+Remember that every machine plugged into the same switch will still see all
+broadcast traffic, unless you configure the switch to keep the private address
+range traffic to the appropriate slots on the switch.
+
+
+
+There are standard 'private' network address ranges that can be used, so that
+you can allocate networks solely for use between cluster machines.
+
+Examples of 'reserved networks' appropriate for this use:
+
+192.168.1.0, 192.168.2.0, 192.168.3.0, and so on.
+
+
+It is up to YOU, the sysadmin, to ensure that only cluster machines are on
+that subnet. If there are other machines on the same subnet, they will see a
+lot of 'garbage' traffic. That is why it is best to use 'private' addresses 
+for heatbeats.
+
+
+If you are running out of secondary network interfaces, you might choose
+to use a free serial port in a two-machine cluster, and set up PPP across
+the serial ports. This should work just as well.
+
+
+See the 'INSTALL' text file for a specific sample network configuration.

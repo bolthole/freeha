@@ -1,0 +1,66 @@
+README file for FreeHA, version 0.9.6
+
+"Free-HA" is an application that lets you set up your own
+ 'High Availability' cluster (On UNIX, or a reasonable facsimile).
+
+Free-HA is currently designed around the idea that the most common 'cluster'
+is a simple failover cluster, where you have an active node, and a standby
+node that takes over operation in case the active node goes
+down/crashes/whatever.
+
+
+If you want practical "here's how you set it up" instructions, go read the
+INSTALL document now, as well as the RUNNING document.
+
+
+
+ The rest of this file is propaganda/ranting
+
+     ============================================================
+
+
+People pay thousands of dollars for XXXXCluster software, for somethat that
+can inherently be accomplished with not that much coding.
+
+The expensive cluster software is usually very flexible, and can handle a
+whole lot of configuration and customization... that most people never use.
+
+So, I figured it was about time to make public a free way of doing what
+'most people' really need under UNIX.
+
+A part of this project is shellscripts, which are then based around a
+highly portable demon written in C that should compile and run on anything
+that supports BSD-style socket libraries.
+
+The presumed massive amount of shellscripting on the front end,
+is to figure out how to get the information the demon needs to start.
+Then there is a bunch more scripting on the BACK end, for startup and
+shutdown of services.
+
+
+I started this little project before I came across
+  http://www.linux-ha.org/
+If that work was a decently engineered cross-platform product from the start,
+instead of being blatantly linux-specific, I would have stopped my work at
+this point, and joined that effort. But since it isnt, I wont.
+Also of apparent interest is www.openclustergroup.org, but that does not seem
+to currently provide concrete tools that solve the common need, either.
+BTW: I have not looked at code from either of those two projects.
+
+At some point, this project may expand into supporting multi-machine high
+availability, with many more tweaks. This is why I am starting with the
+premise of a broadcast network for heartbeats, rather than simply listing IP
+addresses. But first, I have to get the basic stuff happy.  And then enough
+people have to email me to make me feel like continued development is worth
+while.
+
+
+If you are happy with the way this software works for you,
+I strongly encourage/request that you submit your *hasrv scripts back to me
+so that they can be used by other people as well.
+
+
+
+Philip Brown, October, 2003
+http://www.bolthole.com/freeha/
+

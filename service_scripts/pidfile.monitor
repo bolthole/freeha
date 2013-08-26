@@ -1,0 +1,58 @@
+#!/bin/sh
+
+
+#-------------------------------------------------------------------------#
+#  picfile.monitor                                                        #
+#  This script verifies that a pidfile exists, and that the pid is running#
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#                                                                         #
+#  Provided as a tool to be called from 'monitorhasrv'                    #
+#                                                                         #
+#-------------------------------------------------------------------------#
+
+
+
+PIDFILE="$1"
+
+if [ "$PIDFILE" = "" ] ; then
+	echo pidfile.monitor: ERROR: no pidfile specified
+	exit 1
+fi
+
+if [ ! -f "$PIDFILE" ] ; then
+	echo pidfile.monitor: ERROR: file $PIDFILE does not exist
+	exit 1
+fi
+
+PID=`cat $PIDFILE`
+if [ "$PID" = "" ] ; then
+	echo invalid/unreadable pid file $PIDFILE
+	exit 1
+fi
+
+if [ -d /proc ] ; then
+	ls -d /proc/$PID >/dev/null
+	if [ $? -eq 0 ] ; then
+		exit 0
+	else
+		echo pidfile.monitor: pid $PID does not exist
+		exit 1
+	fi
+fi
+
+
+esac
+if [ -x /usr/ucb/ps ] ; then
+	PROCLIST="/usr/ucb/ps ax"
+else
+	PROCLIST="ps -e"
+fi
+$PROCLIST |grep "^$PID ">/dev/null
+
+if [ $? -eq 0 ] ; then
+	exit 0 
+fi
+
+exit 1
+

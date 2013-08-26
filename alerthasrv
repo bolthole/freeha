@@ -1,0 +1,21 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+#  This file gets called when the freehad demon changes states.           #
+#  (ie from 'INITIAL' to 'RUNNING')                                       #
+#  successfully does so, etc. etc.                                        #
+#  You dont have to have anything in here. This script exists for those   #
+#  people that want automatic notification every time ha services change  #
+#  their status.                                                          #
+#                                                                         #
+#-------------------------------------------------------------------------#
+
+
+#  Args passed in:
+#  "$1" == numerical value of state  [see "freehad.h" for the enum list]
+#  "$2" == string representation of state
+
+# mailx -s  "`uname -n` freehad changed state to $2"  admin@yourhost.com
+
+
+exit 0

@@ -1,0 +1,22 @@
+This directory holds sample start/stop/monitor scripts for various 
+applications.
+Right now, its kinda sparse.
+Hopefully, people will contribute sample scripts that other folks can
+share.
+
+The nice clean thing to do is provide scripts that take arguments, 
+like mini-functions. That way, other people can call your scripts from
+the top-level starthasrv,stophasrv,monitorhasrv scripts, and never
+have to edit other people's scripts.
+
+For example, a set of oracle scripts might take arguments like the following:
+
+
+  oracle.start   /oracle/home/path oracle_sid
+  oracle.stop    /oracle/home/path oracle_sid
+  oracle.monitor /oracle/home/path oracle_sid test_user test_table
+
+
+
+Please email me with any scripts that you would like to share with folks.
+I reserve the right to tweak them to make them more general-purpose ;-)

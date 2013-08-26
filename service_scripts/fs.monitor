@@ -1,0 +1,55 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to monitor that a particular filesystem stays mounted            #
+#  Primarily useful for when you have a filesytem on a shared disk        #
+# Provided as a tool to be called from 'monitorhasrv'                     #
+#                                                                         #
+# USAGE:   fs.monitor devpath mountpoint                                  #
+#    EG:   fs.monitor /dev/md/metaset/dsk/d12 /export/home                #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+
+# This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ $# -ne 2 ] ; then
+	echo fs.monitor: ERROR: Need to specify device path, and filesystem mount point
+	exit 1
+fi
+
+
+df $2 | egrep '(^|[(])'$1 >/dev/null
+if [ $? -eq 0 ] ; then
+	# Doublecheck filesystem is actualy FUNCTIONING
+	# This will hang, if Solaris disksuite finds disks unavailable
+	# Which will then cause a timeout of heartbeats, which will
+	# then cause the other node to forcibly take over.
+	# In Solaris, this will result in panicing this machine
+	ls -d $2/. >/dev/null
+
+	# Success!
+	exit 0
+fi
+
+# Something's wrong. Try to figure out a little more about WHAT is wrong
+
+if [ ! -d $2 ] ; then
+	echo fs.monitor: ERROR: mountpoint $2 does not exist
+	exit 1
+fi
+
+if [ ! -b $1 ] ; then
+	echo fs.monitor: ERROR: device $1 does not exist
+	exit 1
+fi
+
+echo fs.monitor: $1 does not appear to be mounted on $2
+exit 2
+

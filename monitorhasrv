@@ -1,0 +1,26 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+#  This file monitors that the services you want, are running.            #
+#  It is up to you to make sure it matches everyting in 'starthasrv'      #
+#  See the various templates for examples that are practically readytorun #
+#  with a minimum of tweaking                                             #
+#                                                                         #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#-------------------------------------------------------------------------#
+
+
+# monitor our fake 'cat' service
+cat.monitor
+if [ $? -ne 0 ] ; then 	exit 1; fi
+
+# You could have other 'xxx.monitor' commands in here, and you usually would.
+# Normally you'd probably have 3 or 4.
+# Examples:
+
+# vip.monitor  192.168.1.10 192.168.1.1 || exit 1
+
+# metaset.monitor metaset || exit 1
+
+
+exit 0

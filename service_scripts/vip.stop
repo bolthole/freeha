@@ -1,0 +1,52 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to unplumb a "virtual IP" used by cluster services               #
+# Provided as a tool to be called from 'stophasrv'                        #
+#                                                                         #
+# USAGE:   vip.stop IP                                                    #
+#    EG:   vip.stop 10.3.5.7                                              #
+#             (MUST be ip addr, not name)                                 #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+
+# This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ "$1" = "" ] ; then
+	echo ERROR: no IP specified
+	exit 1
+fi
+
+case "$1" in 
+	[1-9]*)
+		;;
+	*)
+		echo vip.stop: ERROR: address must be given as IP numbers
+		exit 1
+esac
+
+
+#uses same algorithm as vip.monitor
+name=`ifconfig -a | awk '
+$1 ~ /:/	{split($1,nic,":"); 
+                 lastif=sprintf("%s:%s",nic[1],nic[2]);}
+$2 == "'$1'"	{ print lastif ; exit; }
+
+'`
+
+
+if [ "$name" = "" ] ; then
+	echo vip.stop: IP address $1 not present.
+	exit 0
+fi
+
+
+ifconfig $name unplumb
+

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+#  This file monitors that the services you want, are running.            #
+#  It is up to you to make sure it matches everyting in 'starthasrv'      #
+#  See the various templates for examples that are practically readytorun #
+#  with a minimum of tweaking                                             #
+#  You should make sure that there will be no problems if this is called  #
+#  multiple times.                                                        #
+#  Standard UNIX status: returns 0 on good, non-0 on bad.                 #
+#-------------------------------------------------------------------------#
+
+# This sample 'stop' script takes no arguments, but normally,
+# a stop script might take arguments
+
+cat.stop
+
+# You could have additional 'stop.xxx' commands in here, and you usually would.
+# Examples:
+
+#vip.stop  192.168.1.10
+
+#metaset.stop metaset
+

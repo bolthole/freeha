@@ -1,0 +1,53 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to unmount a filesystem" used by cluster services                #
+#  Primarily useful for when you have a filesytem on a shared disk        #
+# Provided as a tool to be called from 'stophasrv'                        #
+#                                                                         #
+# USAGE:  fs.stop mountpoint                                              #
+#    EG:  fs.stop /export/home                                            #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+
+# This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ "$1" = "" ] ; then
+	echo fs.stop: ERROR: filesystem mountpoint not specified
+	exit 1
+fi
+
+if [ ! -d $1 ] ; then
+	echo fs.stop: ERROR: $1 is not a directory
+	exit 1
+fi
+
+mount -p |grep " $1 " >/dev/null
+if [ $? -ne 0 ] ; then
+	echo fs.stop: $1 not mounted. Not doing anything.
+	exit 0
+fi
+
+umount $1
+
+if [ $? -ne 0 ] ; then
+	# you WILL umount!
+	echo fs.stop: NOTICE: attempting force umount of $1
+	umount -f $1
+fi
+
+mount -p |grep " $1 " >/dev/null
+if [ $? -eq 0 ] ; then
+	echo fs.stop: ERROR: umount of $1 failed.
+	exit 1
+else
+	exit 0
+fi
+

@@ -1,0 +1,44 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to monitor a "virtual IP" used by cluster services               #
+# Provided as a tool to be called from 'monitorhasrv'                     #
+#                                                                         #
+# USAGE:   vip.monitor IP other-IP-to-ping-for-validation                 #
+#    EG:   vip.monitor 10.3.5.7 10.3.5.55                                 #
+#  (Note: first arg MUST be ip addr, not name)                            #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+
+# This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ $# -ne 2 ] ; then
+	echo vip.monitor: ERROR: Need to specify VIP IP addr, and external IP to ping
+	exit 1
+fi
+
+#This uses the same algorithm as vip.stop
+name=`ifconfig -a | awk '
+$1 ~ /:/	{split($1,nic,":"); 
+                 lastif=sprintf("%s:%s",nic[1],nic[2]);}
+$2 == "'$1'"	{ print lastif ; exit; }
+
+'`
+
+
+if [ "$name" = "" ] ; then
+	echo vip.monitor: IP address $1 not present as virtual interface.
+	exit 1
+fi
+
+
+ping -i $name $2
+
+# exit status for script will fall out of ping status

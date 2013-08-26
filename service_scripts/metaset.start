@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to take ownership of a DiskSuite "metaset" (shared disks)        #
+#      (Used in Solaris)                                                  #
+#  Specify the name of the metaset as the only argument                   #
+#                                                                         #
+#  Provided as a tool to be called from 'starthasrv'                    #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+PATH=$PATH:/usr/sbin
+
+if [ "$1" = "" ] ; then
+	error ERROR: no metaset specified
+	exit 1
+fi
+
+metaset -s $1 -t
+
+if [ $? -ne 0 ] ; then
+	# This is REALLY REALLY DANGEROUS. It will CRASH THE OTHER NODE,
+	# if it is actually up. (a feature of DiskSuite, not FreeHA)
+	# But we have to use the flag, to cover the case where
+	# the other node has crashed.
+	# Rely on demon heartbeats to keep this safe.
+
+	metaset -s $1 -t -f
+
+	#if this errors, the status should fall through as exit status.
+fi
+

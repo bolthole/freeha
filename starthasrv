@@ -1,0 +1,34 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+#  This file starts the services you want running on the machine.         #
+#  It is up to you to make sure it starts things up in the right order,   #
+#  successfully does so, etc. etc.                                        #
+#  See the various templates for examples that are practically readytorun #
+#  with a minimum of tweaking                                             #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+# This sample 'start' script takes no arguments, but often,
+# a script would take arguments
+# eg:  start.oracle ORA_SID
+
+cat.start
+if [ $? -ne 0 ] ; then
+	exit 1
+fi
+
+# You could have other 'start.xxx' commands in here, and you usually would.
+# Examples:
+
+#metaset.start metaset
+#if [ $? -ne 0 ] ; then exit 1; fi
+
+#vip.start  eri0 192.168.1.10
+#if [ $? -ne 0 ] ; then exit 1; fi
+
+#fs.start /dev/md/dsk/d10 /import/datavol ufs
+#if [ $? -ne 0 ] ; then exit 1; fi
+
+exit 0

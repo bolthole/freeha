@@ -1,0 +1,64 @@
+#!/bin/sh
+
+#----------------------------------------------------------------------------#
+# Script to mount a filesystem                                               #
+#  Primarily useful for when you have a filesytem on a shared disk           #
+# Provided as a tool to be called from 'starthasrv'                          #
+#                                                                            #
+# USAGE:  fs.start device mountpoint fstype fsck-dev [optional mountargs]    #
+#    EG:                                                                     #
+# fs.start /dev/md/metaset/dsk/d12 /export/home ufs /dev/md/metaset/rdsk/d12 #
+#                                                                            #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                   #
+#----------------------------------------------------------------------------#
+
+
+
+#This is tweaked for Solaris, because that's what I have to play with.
+# Please submit whatever tweaks are neccessary for your favorite OS.
+
+PATH=$PATH:/usr/sbin:/sbin
+
+if [ $# -lt 3 ] ; then
+	echo fs.start: ERROR: Need to specify device path,   mount point, and fstype
+	echo fs.start:  optionally add fsck device as fourth argument.
+	exit 1
+fi
+
+
+fs.monitor $1 $2 >/dev/null
+if [ $? -eq 0 ] ; then
+	echo fs.start: filesystem $2 already mounted
+	exit 0
+fi
+
+if [ "$5" != "" ] ; then
+	MOUNTARGS="$5"
+fi
+
+mount -F $3 $MOUNTARGS $1 $2
+if [ $? -eq 0 ] ; then exit 0 ; fi
+
+# Problem. can we fix it? 
+# First, check if things are valid.
+
+if [ ! -d $2 ] ; then
+	echo fs.start: ERROR: mountpoint $2 does not exist
+	exit 1
+fi
+
+if [ ! -b $1 ] ; then
+	echo fs.start: ERROR: device $1 does not exist
+	exit 1
+fi
+
+if [ "$4" != "" ] ; then
+	fsck -F $3 -y $4
+	mount -F $3 $MOUNTARGS $1 $2
+else
+	echo ERROR: cannot mount $1 on $2. Needs 'fsck?'
+	exit 1
+fi
+
+# if mount errors again, error should fall through as exit status.
+

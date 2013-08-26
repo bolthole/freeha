@@ -1,0 +1,171 @@
+
+		INSTALL documentation for "FreeHA"
+               -----------------------------------
+
+FreeHA currently supports running a 'service' on a two-node
+cluster, in active/standby.
+Its concept of 'single service' is rather flexible. You can actually 
+have it handle a collection of actual services; the only limitation is
+that it is an all-or-nothing affair. Either ALL the services are running,
+or the box has somehow 'failed', and the other box should start up services.
+
+
+
+ ********COMPILING**********************
+
+After a quick glance-through of the top of Makefile, you should be able
+to just do a plain old
+
+  make ; make install
+
+However, you will then have to customize the three master scripts 
+heavily, according to what 'services' you want to run. See
+"SETTING UP CLUSTERED SERVICES", below
+
+You will also need to create a custom startup script for the 'freehad' demon
+at boot-time, to set what networks to use for cluster communication.
+
+See 'startdemon' for an example. 
+
+ >>> YOU MUST SET THE 'PATH' VAR if you write your own 'startdemon' <<<
+
+
+PHYSICAL SETUP
+--------------------
+
+To run a service wish 'high availability', you first need to
+connect two machines with multiple network cards, and configure
+unique IP addresses between them, on unique networks.
+
+For example:
+
+
+
+|--------|                                    |--------|
+| box 1  |-10.1.1.3-----ha_net1--10.1.1.5-----| box 2  |
+|        |                                    |        |
+|        |-192.168.1.3--ha_net2--192.168.1.5--|        |
+|        |                                    |        |
+|        |                                    |        |
+|        |-20.14.3.6               20.14.3.11-|        |
+|        |     |                       |      |        |
+|--------|     |                       |      |--------|
+               |                       |
+      ------general-network-with-other-machines------------
+
+
+10.1.1.255 is then the broadcast address freeHA will use for the first
+private channel of communication, and 192.168.1.255 is the broadcast address
+for the second channel
+
+"private channel" can be translated as "a network crossover cable
+directly connected to each machine", or whatever works for your site.
+
+You would start freehad on box1 as
+  freehad -a 10.1.1.3 -A 10.1.1.255  -b 192.168.1.3 -B 192.168.1.255 
+
+  [although if you dont specify the broadcast, freehad will default it
+   to be a class C style broadcast anyway]
+
+
+
+============SETTING UP CLUSTERED SERVICES===================================
+
+ Services are controlled by scripts which are usually in
+ /opt/freeha/bin
+
+ Doing a "make install" will copy default versions of the required
+ scripts to that directory.
+ The top-level scripts are:
+
+
+ - starthasrv
+ - stophasrv
+ - monitorhasrv
+
+
+  For each service you plan to run, you must add a line (or two) to each of
+  the three scripts to handle it.
+
+  A major goal of the FreeHA project is to provide easy to use utility
+  scripts for all common services people are interested in clustering.
+  That way, line entries could be as simple as
+
+  starthasrv:      vip.start hme0 1.2.3.4
+  stophasrv:       vip.stop hme0 1.2.3.4
+  monitorthasrv:   vip.monitor 1.2.3.X 
+
+  A sample fake service is provided, so that you can see the demon in action.
+
+ For your convenience, there is a sample boot-time startup script for the
+ freehad demon, named "startdemon"
+
+
+
+***NOTE ON HA STARTUP***
+  Please note that BOTH NODES must be running before the service
+  will be auto started up.
+  Once both nodes are running, services will normally be auto started
+  on the 'alphabetically first' node. Thus, if you have 3 systems named
+  "ha1", "ha2", and "ha3", then 'ha3' can be considered the "primary"
+  system.
+
+
+STATUS of a node
+  Status of nodes can be found by reading the status file on any node.
+  The location of the status file defaults to 
+
+  /var/run/freeha.status
+
+  or /var/freeha/freeha.status if there is no /var/run,
+  or whatever you specify to be the status file when you startup freehad.
+
+
+
+
+==============================CAVIATES==============================
+
+>>
+  Make your monitoring scripts run FAST. heartbeats are sent between monitor
+  runs. If your monitoring hangs, heartbeats will not be sent, which will
+  eventually lead to the node being set to timedout state by other nodes.
+  At which point, another node will try to TAKE OVER SERVICES!!!
+  Adjust timeout seconds to be longer, if monitoring is unavoidably slow.
+  timeout is 120 seconds by default, so you have a good amount of leeway
+  to begin with.
+
+>>
+  Similarly to the above... be REALLY careful using timesync software
+  on clustered nodes. You should always adjust time in small increments
+  (eg: "date -a", or "ntpdate -B") rather than jumping to a new time.
+  Jumping to a new time, will cause timeouts of heartbeats from
+  the other system, and cause split-brain hell.
+  In other words, the local demon on the time-adjusted machine will think it
+  needs to take over services, because the other side has not responded during
+  the gap of the time adjustment.
+
+>>
+  ***Do not*** run multiple clusters of FreeHA on the same subnet.
+  That is to say, make sure that the 'heartbeat' subnets,
+  are private subnets shared only between the machines in
+  a particular cluster.
+  Or make sure to change the port numbers each cluster uses, so that
+  they do not conflict with each other, even if they are using the same
+  broadcast address destination.
+
+>>
+  This software is by no means 'secure'. It uses a simple UDP protocol.
+  If someone wanted to, they could easily 'spoof' the states, and
+  cause your cluster to go down.
+  Firewalls are Good. Private networks are Better.
+
+>>
+  ID for a node is encoded in 'heartbeat' packets as the hostname of the
+  machine, as returned by 'uname -n'. Nodes are *automatically added* to the
+  overall in-memory state of the cluster, if heartbeats are detected from new
+  nodes. (There is no automatic deletion)
+  Be wary of messing with the hostname of your machines.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+FreeHA, July 2005  -- Philip Brown
+http://www.bolthole.com/freeha/

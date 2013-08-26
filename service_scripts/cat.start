@@ -1,0 +1,16 @@
+#!/bin/sh
+
+#-------------------------------------------------------------------------#
+# Script to demonstrate starting a dummy service, for FreeHA              #
+#  Provided as a tool to be called from 'starthasrv'                      #
+#                                                                         #
+#  Standard UNIX status: returns 0 on okay, non-0 on fail.                #
+#-------------------------------------------------------------------------#
+
+
+# If already running, dont bother to start again
+cat.monitor && exit 0
+
+nice cat /dev/zero </dev/null >/dev/null  2>&1  &
+
+exit 0

@@ -13,6 +13,9 @@
 # This sample 'stop' script takes no arguments, but normally,
 # a stop script might take arguments
 
+PATH=$PATH:/opt/freeha/bin:/opt/freeha/bin/service_scripts
+
+# "cat" is a dummy service script. Replace with ones relevant to you.
 cat.stop
 
 # You could have additional 'stop.xxx' commands in here, and you usually would.
